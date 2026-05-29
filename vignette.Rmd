@@ -1,0 +1,42 @@
+---
+title: "Seamless Epigenomic Figures in R Using chromDicts"
+author: "Kathryn Lande"
+date: "2026-05-29"
+output: github_document
+---
+
+
+
+```{r, message=FALSE}
+# library(chromDicts)
+library(PCBS)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+```
+
+
+```{r}
+# get the dictlist and gtf for out testing data
+data(testing)
+```
+
+# Make a peak track at a gene:
+
+Here we show a minimal example:
+```{r}
+
+makeGeneTrack(DictList = testing_dicts, gtf = GTF, gene="Adgrb3")
+
+```
+
+
+
+
+
+
+
+
+
+
+
