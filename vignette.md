@@ -1,0 +1,194 @@
+Memory Efficient Epigenomics And Grob Visualizations
+================
+Kathryn Lande
+2026-05-29
+
+- [1 Setup](#1-setup)
+- [2 Customizable Peak Tracks](#2-customizable-peak-tracks)
+  - [2.1 Peak Tracks at Genes](#21-peak-tracks-at-genes)
+  - [2.2 Peak Tracks at Specific
+    Loci:](#22-peak-tracks-at-specific-loci)
+- [3 Metagenes](#3-metagenes)
+- [4 Quantifying Epigenomic Signatures Across
+  Regions](#4-quantifying-epigenomic-signatures-across-regions)
+
+# 1 Setup
+
+Install chromDict functions from github:
+
+``` r
+# remotes::install_github("katlande/chromDicts")
+```
+
+load packages:
+
+``` r
+library(chromDicts)
+library(PCBS)
+library(ggplot2)
+library(dplyr)
+library(data.table)
+library(ggpubr)
+```
+
+Import test data:
+
+``` r
+# get the dictlist and gtf for out testing data
+data(testing)
+```
+
+# 2 Customizable Peak Tracks
+
+Using chromDicts, we can quickly and easily extract genomic loci and
+plot them as highly customizable grobs. Below are some examples of how
+to make peak tracks directly in ggplot.
+
+## 2.1 Peak Tracks at Genes
+
+Here we show a minimal example:
+
+``` r
+makeGeneTrack(DictList = testing_dicts, # list of chromDicts to plot
+              gtf = GTF,
+              gene="Npas2") # gene to plot over
+```
+
+![](vignette_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
+We can also use more advanced options to customize the plot, including
+colouring the peak tracks by a specified variable using a custom
+palette, annotating specific sites, and changing the peak track height.
+
+``` r
+meta <- data.frame(names(testing_dicts), c("CTL", "TRT"))
+
+annots <- data.frame(chr=c("chr1", "chr1"),
+                     s=c(39250000, 39272000),
+                     e=c(39265000, 39290000))
+
+makeGeneTrack(DictList=testing_dicts, 
+              gtf=GTF, 
+              gene="Npas2", 
+              rel=3, # relative height of peak track window to annotation window
+              meta = meta, # meta data for colouring tracks
+              cols=c("grey", "skyblue"), # custom colour palette
+              annotation_bed = annots) # bed-formatted sites to annotate
+```
+
+![](vignette_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+## 2.2 Peak Tracks at Specific Loci:
+
+In some cases, you may want to look at an intergenic site, a subset of a
+gene, or another region that can’t be well captured with
+makeGeneTrack(). You can also make peak tracks using specified loci:
+
+``` r
+# settings are basically the same, but instead of using the gene name, supply a specific locus. 
+# Here we look at the beginning of Gbgt1:
+makeLocusTrack(DictList=testing_dicts, 
+              gtf=GTF, 
+              chr = "chr2",
+              start = 28496000,
+              end = 28499000,
+              rel=3, # relative height of peak track window to annotation window
+              meta = meta, # meta data for colouring tracks
+              cols=c("grey", "skyblue"),
+              annotation_bed = data.frame("chr2", 28497650, 28498000)) # bed-formatted sites to annotate
+```
+
+![](vignette_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+# 3 Metagenes
+
+Metagenes are a useful tool for looking at average genomic trends across
+a large set of connected regions. In this example, we’ll pull +/- 500bp
+of all start codons in our test GTF to compare our treat and control
+samples.
+
+``` r
+# extract loci to plot into a bed-formated data.frame:
+start_codons <- subset(GTF, V3 == "start_codon")
+loci <- data.frame(chr=paste0("chr", start_codons$V1), 
+                   start=start_codons$V4-500, 
+                   end=start_codons$V5+500)
+
+# Use the metagene functionality from PCBS to plot a minimal metagene for the control sample:
+valName <- colnames(testing_dicts$control[[1]])[3]
+
+methylDiff_metagene(testing_dicts$control, # input one chromDict
+                    loci, # bed-formatted loci to query
+                    return.data = F, # if FALSE, returns a plot (for simple metagenes)
+                    yaxis = "Mean BPM",
+                    title = "Simple Metagene",
+                    value = valName) # name of value column in chromDict
+```
+
+![](vignette_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+We can also make more advanced metagenes comparing different conditions
+or area sets, as below:
+
+``` r
+# extract metagene information from each sample:
+metagene_ctl <- methylDiff_metagene(testing_dicts$control, loci, return.data = T, value = valName)
+metagene_trt <- methylDiff_metagene(testing_dicts$treatment, loci, return.data = T, value = valName)
+
+# Overlay control and treatment start codon metagenes in one plot:
+multiple_metagenes(data_list = list(metagene_ctl, metagene_trt), # list of raw data
+                   set_names = c("Control", "Treatment"), # names for elements of the data_list list
+                   col=c(Control="skyblue", Treatment="salmon"), # colours for metagenes
+                   title="Start Codons, +/-500",
+                   legend.title = F, 
+                   yaxis = "Mean BPM")
+```
+
+![](vignette_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+Above, we see start codons have a distinctly higher signal in treatment
+samples than they do in control samples. We can also check if this
+extends to other features, for example, exons:
+
+``` r
+# extract all exons:
+exons <- subset(GTF, V3 == "exon")
+exon_loci <- data.frame(chr=paste0("chr", exons$V1), 
+                        start=exons$V4, 
+                        end=exons$V5)
+
+metagene_ctl_exon <- methylDiff_metagene(testing_dicts$control, exon_loci, return.data = T, value = valName)
+metagene_trt_exon <- methylDiff_metagene(testing_dicts$treatment, exon_loci, return.data = T, value = valName)
+
+# plot both exon and start codon metagenes together:
+multiple_metagenes(data_list = list(metagene_ctl, metagene_ctl_exon, metagene_trt, metagene_trt_exon),
+                   set_names = c("Ctl - Start Codons", "Ctl - Exons", "Trt - Start Codons", "Trt - Exons"),
+                   col=c("skyblue", "navy", "salmon", "darkred"), # colours for metagenes
+                   title="Start Codons & Exons",
+                   legend.title = F, 
+                   yaxis = "Mean BPM")
+```
+
+![](vignette_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> Above, we
+see that start codons generally have a higher signature than exons, and
+the difference between treatment and control is also bigger at exons.
+
+# 4 Quantifying Epigenomic Signatures Across Regions
+
+In some cases, you may want to quantify the scale and significances of
+these differences across regions. For example, in the above metagenes,
+we see a difference in our signature at start codons between conditions.
+But is this a significant difference? We can pull the average signatures
+across these regions and plot them:
+
+``` r
+# plot the mean across all loci
+RegionAverages(testing_dicts, loci, cols = c("skyblue", "salmon"))+
+  stat_compare_means(label.y = 0.15) # add a significance metric
+```
+
+![](vignette_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+Above, we see that this difference between treatment and control is
+*not* significant with a p=0.2, but merely biased by a few outlier loci
+in the treatment that have particularly high accumulation of our signal.
