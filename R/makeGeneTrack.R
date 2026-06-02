@@ -89,7 +89,7 @@ makeGeneTrack <- function(DictList, gtf, gene, annotation_bed=NULL, rel=NULL, co
                           mapping =  ggplot2::aes(x = x, y = y, yend = y,
                                                   xend = ifelse(strand == "+", x + diff(range(input$pos)) * 0.01,
                                                                 x - diff(range(input$pos)) * 0.01)),
-                          arrow =  ggplot2::arrow(length = unit(3, "pt"), type = "closed"),
+                          arrow =  ggplot2::arrow(length = ggplot2::unit(3, "pt"), type = "closed"),
                           linewidth = 0.2, color = "black")-> annotgrob
 
   # make peaks

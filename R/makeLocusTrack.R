@@ -92,7 +92,7 @@ makeLocusTrack <- function(DictList, gtf, chr, start, end, annotation_bed=NULL, 
                             mapping =  ggplot2::aes(x = x, y = y, yend = y,
                                                     xend = ifelse(strand == "+", x + diff(range(input$pos)) * 0.01,
                                                                   x - diff(range(input$pos)) * 0.01)),
-                            arrow =  ggplot2::arrow(length = unit(3, "pt"), type = "closed"),
+                            arrow =  ggplot2::arrow(length = ggplot2::unit(3, "pt"), type = "closed"),
                             linewidth = 0.2, color = "black")-> annotgrob
   }
 
