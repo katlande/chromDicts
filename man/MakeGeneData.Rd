@@ -2,7 +2,7 @@
 \alias{MakeGeneData}
 \title{Pull data from a list of chromDicts}
 \usage{
-MakeGeneData(chromDictList, c, s, e)
+MakeGeneData(chromDictList, c, s, e, force=TRUE)
 }
 \description{
 Pull data from a list of chromDicts at a specified locus.
@@ -12,6 +12,7 @@ Pull data from a list of chromDicts at a specified locus.
 \item{c}{Chromosome of locus.}
 \item{s}{Integer, start position of locus.}
 \item{e}{Integer, end position of locus.}
+\item{force}{Boolean, forces chromDicts together when they have different value names, may cause errors if used improperly.}
 }
 \examples{
 # average all trt samples into a single value:

@@ -2,11 +2,12 @@
 #' @importFrom magrittr %>%
 RegionAverages <- function(DictList, regions, cols=NULL){
   apply(regions, 1, function(x){
-    MakeGeneData(DictList, x[[1]], x[[2]], x[[3]]) %>%
+    MakeGeneData(DictList, x[[1]], x[[2]], x[[3]], force=TRUE) %>%
+      stats::setNames(c("value", "chr", "pos", "Set")) %>%
       dplyr::group_by(Set) %>%
       dplyr::summarise(mean(value)) %>%
       as.data.frame()  %>%
-      setNames(c("Set", "meanValue"))
+      stats::setNames(c("Set", "meanValue"))
   }) %>%
     do.call(rbind,.) -> g
 
