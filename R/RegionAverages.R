@@ -1,15 +1,31 @@
 #' @export
 #' @importFrom magrittr %>%
-RegionAverages <- function(DictList, regions, cols=NULL){
-  apply(regions, 1, function(x){
-    MakeGeneData(DictList, x[[1]], x[[2]], x[[3]], force=TRUE) %>%
-      stats::setNames(c("value", "chr", "pos", "Set")) %>%
-      dplyr::group_by(Set) %>%
-      dplyr::summarise(mean(value)) %>%
-      as.data.frame()  %>%
-      stats::setNames(c("Set", "meanValue"))
-  }) %>%
-    do.call(rbind,.) -> g
+RegionAverages <- function(DictList, regions, cols=NULL, version=2){
+  
+  if(version==2){
+    apply(regions, 1, function(x){
+      MakeGeneData(DictList, x[[1]], x[[2]], x[[3]], force=TRUE) %>%
+        stats::setNames(c("chr", "pos", "value", "Set")) %>%
+        dplyr::group_by(Set) %>%
+        dplyr::summarise(mean(value)) %>%
+        as.data.frame()  %>%
+        stats::setNames(c("Set", "meanValue"))
+    }) %>%
+      do.call(rbind,.) -> g
+  } else {
+    apply(regions, 1, function(x){
+      MakeGeneData(DictList, x[[1]], x[[2]], x[[3]], force=TRUE) %>%
+        stats::setNames(c("value", "chr", "pos", "Set")) %>%
+        dplyr::group_by(Set) %>%
+        dplyr::summarise(mean(value)) %>%
+        as.data.frame()  %>%
+        stats::setNames(c("Set", "meanValue"))
+    }) %>%
+      do.call(rbind,.) -> g
+  }
+  
+  
+  
 
   if(is.null(cols)){
     cols <- grDevices::colorRampPalette(c("#E7298A", "#D95F02", "#A6761D","#E6AB02", "#66A61E","#1B9E77","#666666","#7570B3"))(length(unique(g$Set)))
