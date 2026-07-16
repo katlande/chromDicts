@@ -169,9 +169,10 @@ multiple_metagenes(data_list = list(metagene_ctl, metagene_ctl_exon, metagene_tr
                    yaxis = "Mean BPM")
 ```
 
-![](vignette_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> Above, we
-see that start codons generally have a higher signature than exons, and
-the difference between treatment and control is also bigger at exons.
+![](vignette_files/figure-gfm/unnamed-chunk-9-1.png)<!-- --> 
+
+Above, we see that start codons generally have a higher signature than exons, and
+the difference between treatment and control is also bigger than at exons.
 
 # 4 Quantifying Epigenomic Signatures Across Regions
 
